@@ -1,0 +1,30 @@
+version: '2'
+services:
+  application:
+    image: tianon/true
+    volumes:
+      - ${APPLICATION}:/var/www
+
+  memcached:
+    image: memcached:${MEMCADHED_VERSION}
+    container_name: ${CONTAINER_PREFIX}_memcached
+    ports:
+      - "${MEMCACHED_HOST_PORT}:11211"
+
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    container_name: ${CONTAINER_PREFIX}_postgres
+    volumes:
+      - ${DATA_SAVE_PATH}/postgres:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+  redis:
+    image: redis:${REDIS_VERSION}
+    container_name: ${CONTAINER_PREFIX}_redis
+    ports:
+      - "${REDIS_PORT}:6379"
+
+volumes:
+  postgres:
+    driver: local
