@@ -2,11 +2,24 @@ version: '2'
 services:
   application:
     image: tianon/true
+    container_name: ${CONTAINER_PREFIX}_app
     volumes:
       - ${APPLICATION}:/var/www
 
+  workspace:
+    build:
+      context: ./ruby
+      dockerfile: "Dockerfile-${RUBY_BUILD_VERSION}"
+    container_name: ${CONTAINER_PREFIX}_workspace
+#    command: bash -c "bundle install && bundle exec rails s -p 3000 -b 0.0.0.0"
+    volumes_from:
+      - application
+    ports:
+      - "${WORKSPACE_WEB_PORT}:3000"
+      - "${WORKSPACE_SSH_PORT}:22"
+
   memcached:
-    image: memcached:${MEMCADHED_VERSION}
+    image: memcached:${MEMCACHED_VERSION}
     container_name: ${CONTAINER_PREFIX}_memcached
     ports:
       - "${MEMCACHED_HOST_PORT}:11211"
@@ -24,6 +37,21 @@ services:
     container_name: ${CONTAINER_PREFIX}_redis
     ports:
       - "${REDIS_PORT}:6379"
+
+#  sidekiq:
+#    build:
+#      context: ./ruby
+#      dockerfile: "Dockerfile-${RUBY_BUILD_VERSION}"
+#    command: bundle exec sidekiq
+#    volumes_from:
+#      - application
+#    depends_on:
+#      - application
+#      - workspace
+#      - postgres
+#      - redis
+#    env_file:
+#      - ${APPLICATION}/.env
 
 volumes:
   postgres:
