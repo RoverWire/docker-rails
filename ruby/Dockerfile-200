@@ -1,15 +1,27 @@
-FROM debian:stable-slim
+FROM ruby:2.0.0-slim
 
 MAINTAINER Luis Perez <luis.felipe@cl.ly>
 
-RUN apt-get update -qq && apt-get install -y apt-utils wget gnupg build-essential software-properties-common \
-    python-dev python-pip zlib1g-dev libssl-dev libreadline-dev libyaml-dev libsqlite3-dev sqlite3 \
-    libxml2-dev libxslt1-dev libcurl4-openssl-dev libffi-dev nodejs
+RUN apt-get update
 
-RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main' > /etc/apt/sources.list.d/pgdg.list && \
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
-    apt-key add - \
-    && apt-get update \
-    && apt-get install -y libpq-dev postgresql-client-9.4
+RUN apt-get -y install software-properties-common python-software-properties \
+    zlib1g-dev libssl-dev libreadline-dev libyaml-dev build-essential libpq-dev \
+    libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev libffi-dev \
+    wget \
+    curl \
+    git-core \
+    logrotate \
+    python-dev \
+    python-pip \
+    libpq-dev postgresql-client-9.4 \
+    --fix-missing --no-install-recommends
+
+# Set install path for reference later.
+ENV INSTALL_PATH /var/www
+RUN mkdir -p $INSTALL_PATH
+RUN gem install bundler
+
+WORKDIR $INSTALL_PATH
 
 EXPOSE 3000
+EXPOSE 22
