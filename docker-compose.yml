@@ -1,48 +1,5 @@
-version: '2'
+version: '3'
 services:
-  application:
-    image: tianon/true
-    container_name: ${CONTAINER_PREFIX}_app
-    volumes:
-      - ${APPLICATION}:/var/www
-
-  workspace:
-    build:
-      context: ./ruby
-      dockerfile: "Dockerfile-${RUBY_BUILD_VERSION}"
-    container_name: ${CONTAINER_PREFIX}_workspace
-    command: bundle install
-    volumes_from:
-      - application
-    depends_on:
-      - application
-    ports:
-      - "${WORKSPACE_SSH_PORT}:22"
-
-  setup:
-    build:
-      context: ./ruby
-      dockerfile: "Dockerfile-${RUBY_BUILD_VERSION}"
-    command: rake db:setup
-    volumes_from:
-      - application
-    depends_on:
-      - postgres
-      - workspace
-
-  web:
-    build:
-      context: ./ruby
-      dockerfile: "Dockerfile-${RUBY_BUILD_VERSION}"
-    container_name: ${CONTAINER_PREFIX}_web
-    command: bundle exec rails s -p 3000 -b 0.0.0.0
-    volumes_from:
-      - application
-    depends_on:
-      - setup
-    ports:
-      - "${WORKSPACE_WEB_PORT}:3000"
-
   memcached:
     image: memcached:${MEMCACHED_VERSION}
     container_name: ${CONTAINER_PREFIX}_memcached
@@ -60,24 +17,7 @@ services:
   redis:
     image: redis:${REDIS_VERSION}
     container_name: ${CONTAINER_PREFIX}_redis
+    volumes:
+      - ${DATA_SAVE_PATH}/redis:/data
     ports:
       - "${REDIS_PORT}:6379"
-
-  sidekiq:
-    build:
-      context: ./ruby
-      dockerfile: "Dockerfile-${RUBY_BUILD_VERSION}"
-    command: bundle exec sidekiq
-    volumes_from:
-      - application
-    depends_on:
-      - setup
-      - redis
-    env_file:
-      - ${APPLICATION}/.env
-
-volumes:
-  application:
-    driver: local
-  postgres:
-    driver: local
